@@ -1,6 +1,5 @@
 import { ChartJSNodeCanvas } from "chartjs-node-canvas";
 import { ChartConfiguration } from "chart.js";
-import "chartjs-adapter-date-fns";
 import { StockHistory, displayTicker } from "./stock";
 
 const WIDTH = 800;
@@ -13,98 +12,84 @@ const chartCanvas = new ChartJSNodeCanvas({
 });
 
 const COLORS = [
-  "#89b4fa", // blue
-  "#a6e3a1", // green
-  "#f38ba8", // red
-  "#fab387", // peach
-  "#cba6f7", // mauve
-  "#94e2d5", // teal
-  "#f9e2af", // yellow
-  "#74c7ec", // sapphire
+  "#89b4fa",
+  "#a6e3a1",
+  "#f38ba8",
+  "#fab387",
+  "#cba6f7",
+  "#94e2d5",
+  "#f9e2af",
+  "#74c7ec",
 ];
 
-/**
- * 複数銘柄のチャート画像をBuffer(PNG)で生成
- */
+function formatDate(date: Date): string {
+  const m = (date.getMonth() + 1).toString().padStart(2, "0");
+  const d = date.getDate().toString().padStart(2, "0");
+  return `${m}/${d}`;
+}
+
 export async function generateChart(
   data: Map<string, StockHistory[]>
 ): Promise<Buffer> {
+  // 全銘柄の日付をユニオンしてラベル作成
+  const allDates = new Set<string>();
+  for (const history of data.values()) {
+    for (const h of history) {
+      allDates.add(formatDate(h.date));
+    }
+  }
+  const labels = Array.from(allDates).sort();
+
+  const useNormalized = data.size > 1;
+
   const datasets = Array.from(data.entries()).map(
     ([ticker, history], index) => {
       const color = COLORS[index % COLORS.length];
-      return {
-        label: displayTicker(ticker),
-        data: history.map((h) => ({
-          x: h.date.getTime(),
-          y: h.close,
-        })),
-        borderColor: color,
-        backgroundColor: color + "33",
-        borderWidth: 2,
-        pointRadius: 0,
-        fill: false,
-        tension: 0.1,
-      };
-    }
-  );
-
-  // 銘柄ごとに価格帯が違うので、正規化（初日=100%）するか個別Y軸にする
-  // ここでは正規化方式を採用
-  const normalizedDatasets = Array.from(data.entries()).map(
-    ([ticker, history], index) => {
-      const color = COLORS[index % COLORS.length];
+      const dateMap = new Map(history.map((h) => [formatDate(h.date), h.close]));
       const basePrice = history.length > 0 ? history[0].close : 1;
+
+      const values = labels.map((label) => {
+        const close = dateMap.get(label);
+        if (close == null) return null;
+        return useNormalized ? ((close - basePrice) / basePrice) * 100 : close;
+      });
+
       return {
         label: displayTicker(ticker),
-        data: history.map((h) => ({
-          x: h.date.getTime(),
-          y: ((h.close - basePrice) / basePrice) * 100,
-        })),
+        data: values,
         borderColor: color,
         backgroundColor: color + "33",
         borderWidth: 2,
         pointRadius: 0,
         fill: false,
         tension: 0.1,
+        spanGaps: true,
       };
     }
   );
-
-  // 銘柄が1つなら実際の価格、複数なら正規化（変化率%）
-  const useNormalized = data.size > 1;
-  const finalDatasets = useNormalized ? normalizedDatasets : datasets;
 
   const config: ChartConfiguration = {
     type: "line",
-    data: {
-      datasets: finalDatasets as any,
-    },
+    data: { labels, datasets },
     options: {
       responsive: false,
       scales: {
         x: {
-          type: "time" as any,
-          time: {
-            unit: "day",
-            displayFormats: { day: "MM/dd" },
-          },
-          ticks: { color: "#cdd6f4" },
+          ticks: { color: "#cdd6f4", maxTicksLimit: 10 },
           grid: { color: "#31324433" },
         },
         y: {
           ticks: {
             color: "#cdd6f4",
             callback: useNormalized
-              ? (value: any) => `${value > 0 ? "+" : ""}${Number(value).toFixed(1)}%`
+              ? (value: any) => `${Number(value) > 0 ? "+" : ""}${Number(value).toFixed(1)}%`
               : (value: any) => `¥${Number(value).toLocaleString()}`,
           },
           grid: { color: "#31324433" },
         },
       },
       plugins: {
-        legend: {
-          labels: { color: "#cdd6f4" },
-        },
+        legend: { labels: { color: "#cdd6f4" } },
         title: {
           display: true,
           text: useNormalized ? "株価変化率（30日間）" : "株価推移（30日間）",
