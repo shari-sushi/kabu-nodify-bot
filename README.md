@@ -1,3 +1,9 @@
+全てClaude.aiが作りました
+意図的にエディターやターミナルを使わずにClaude, GitHub, Railwayの各ブラウザだけで完結させたので、コーディングの仕方とかはai流です。
+https://claude.ai/share/6eff4a8a-6500-40e1-b1e9-3e931b7f76df
+※1度ミスった時に`git reset --hard`だけVScodeでやりました。
+---
+
 # kabu-notify-bot
 
 Discord bot で日本株の株価通知を定期配信する。
@@ -54,3 +60,7 @@ SQLite のデータ永続化には Volume を `/app/data` にマウントし、`
 - better-sqlite3（DB）
 - chart.js + chartjs-node-canvas（チャート画像生成）
 - node-cron（スケジューラ）
+
+---
+
+
