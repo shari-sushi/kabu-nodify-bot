@@ -30,6 +30,18 @@ let scheduler: Scheduler;
 client.once(Events.ClientReady, (readyClient) => {
   console.log(`Logged in as ${readyClient.user.tag}`);
 
+  // スラッシュコマンド登録
+  const { REST, Routes } = await import("discord.js");
+  const rest = new REST({ version: "10" }).setToken(config.botToken);
+  const commands = [
+    addStock.data.toJSON(),
+    removeStock.data.toJSON(),
+    setSchedule.data.toJSON(),
+    list.data.toJSON(),
+  ];
+  await rest.put(Routes.applicationCommands(config.clientId), { body: commands });
+  console.log(`${commands.length} slash commands registered`);
+
   scheduler = new Scheduler(client, repo);
   scheduler.registerAll();
 });
