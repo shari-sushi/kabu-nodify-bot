@@ -27,7 +27,7 @@ const client = new Client({
 
 let scheduler: Scheduler;
 
-client.once(Events.ClientReady, (readyClient) => {
+client.once(Events.ClientReady, async (readyClient) => {
   console.log(`Logged in as ${readyClient.user.tag}`);
 
   // スラッシュコマンド登録
