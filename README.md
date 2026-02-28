@@ -1,7 +1,9 @@
-全てClaude.aiが作りました
-意図的にエディターやターミナルを使わずにClaude, GitHub, Railwayの各ブラウザだけで完結させたので、コーディングの仕方とかはai流です。
-https://claude.ai/share/6eff4a8a-6500-40e1-b1e9-3e931b7f76df
-※1度ミスった時に`git reset --hard`だけVScodeでやりました。
+# 前置き
+全てClaude.aiが作りました  
+意図的にエディターやターミナルを使わずにClaude, GitHub, Railwayの各ブラウザだけで完結させたので、コーディングの仕方とかはai流です。  
+https://claude.ai/share/6eff4a8a-6500-40e1-b1e9-3e931b7f76df  
+※1度ミスった時に`git reset --hard`だけVScodeでやりました。  
+
 ---
 
 # kabu-notify-bot
