@@ -1,6 +1,6 @@
-import yahooFinance from "yahoo-finance2";
+import YahooFinanceModule from "yahoo-finance2";
 
-const yahooFinance = new YahooFinance();
+const yahooFinance = new YahooFinanceModule();
 
 export interface StockQuote {
   ticker: string;
