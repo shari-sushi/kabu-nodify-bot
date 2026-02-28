@@ -1,23 +1,24 @@
-# 前置き
-全てClaude.aiが作りました  
-意図的にエディターやターミナルを使わずにClaude, GitHub, Railwayの各ブラウザだけで完結させたので、コーディングの仕方とかはai流です。  
-https://claude.ai/share/6eff4a8a-6500-40e1-b1e9-3e931b7f76df  
-※1度ミスった時に`git reset --hard`だけVScodeでやりました。  
+# kabu-notify-bot
+
+## 前置き
+
+全てClaude.aiが作りました
+意図的にエディターやターミナルを使わずにClaude, GitHub, Railwayの各ブラウザだけで完結させたので、コーディングの仕方とかはai流です。
+<https://claude.ai/share/6eff4a8a-6500-40e1-b1e9-3e931b7f76df>
+※1度ミスった時に`git reset --hard`だけVScodeでやりました。
 
 ---
-
-# kabu-notify-bot
 
 Discord bot で日本株の株価通知を定期配信する。
 
 ## コマンド一覧
 
-- `/list` — そのDiscordサーバーの全設定を表示（銘柄・スケジュール）
-- `/add-stock <銘柄コード>` — そのチャンネルで通知する銘柄を追加
-- `/remove-stock <銘柄コード>` — そのチャンネルから銘柄を削除
-- `/set-schedule <曜日> <時刻1> [時刻2] [時刻3]` — そのチャンネルに通知スケジュールを追加
-- `/remove-schedule <ID>` — 指定したIDのスケジュールを削除（IDは `/list` で確認）
-- `/help` — コマンドの使い方を表示
+- `/kabu-list` — そのDiscordサーバーの全設定を表示（銘柄・スケジュール）
+- `/kabu-add-stock <銘柄コード>` — そのチャンネルで通知する銘柄を追加
+- `/kabu-remove-stock <銘柄コード>` — そのチャンネルから銘柄を削除
+- `/kabu-set-schedule <曜日> <時刻1> [時刻2] [時刻3]` — そのチャンネルに通知スケジュールを追加
+- `/kabu-remove-schedule <ID>` — 指定したIDのスケジュールを削除（IDは `/list` で確認）
+- `/kabu-help` — コマンドの使い方を表示
 
 ## セットアップ
 

@@ -2,7 +2,7 @@ import { Client, GatewayIntentBits, Events } from "discord.js";
 import Database from "better-sqlite3";
 import path from "path";
 import fs from "fs";
-import { config } from "./config";
+import { config, COMMAND_PREFIX } from "./config";
 import { migrate } from "./db/schema";
 import { Repository } from "./db/repository";
 import { Scheduler } from "./services/scheduler";
@@ -12,6 +12,9 @@ import * as setSchedule from "./commands/set-schedule";
 import * as removeSchedule from "./commands/remove-schedule";
 import * as list from "./commands/list";
 import * as help from "./commands/help";
+
+// コマンドIDのキャッシュ
+export const commandIds = new Map<string, string>();
 
 // DB初期化
 const dbDir = path.dirname(config.dbPath);
@@ -43,7 +46,15 @@ client.once(Events.ClientReady, async (readyClient) => {
     list.data.toJSON(),
     help.data.toJSON(),
   ];
-  await rest.put(Routes.applicationCommands(config.clientId), { body: commands });
+  const registeredCommands = (await rest.put(Routes.applicationCommands(config.clientId), {
+    body: commands,
+  })) as { id: string; name: string }[];
+
+  // コマンドIDをキャッシュ
+  for (const cmd of registeredCommands) {
+    commandIds.set(cmd.name, cmd.id);
+  }
+
   console.log(`${commands.length} slash commands registered`);
 
   scheduler = new Scheduler(client, repo);
@@ -55,23 +66,23 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
   try {
     switch (interaction.commandName) {
-      case "add-stock":
+      case COMMAND_PREFIX + "add-stock":
         await addStock.execute(interaction, repo);
         break;
-      case "remove-stock":
+      case COMMAND_PREFIX + "remove-stock":
         await removeStock.execute(interaction, repo);
         break;
-      case "set-schedule":
+      case COMMAND_PREFIX + "set-schedule":
         await setSchedule.execute(interaction, repo, scheduler);
         break;
-      case "remove-schedule":
+      case COMMAND_PREFIX + "remove-schedule":
         await removeSchedule.execute(interaction, repo, scheduler);
         break;
-      case "list":
+      case COMMAND_PREFIX + "list":
         await list.execute(interaction, repo);
         break;
-      case "help":
-        await help.execute(interaction);
+      case COMMAND_PREFIX + "help":
+        await help.execute(interaction, commandIds);
         break;
       default:
         await interaction.reply({

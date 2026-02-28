@@ -2,9 +2,10 @@ import { ChatInputCommandInteraction, SlashCommandBuilder, EmbedBuilder } from "
 import { Repository } from "../db/repository";
 import { displayTicker } from "../services/stock";
 import { cronToDescription } from "../services/schedule-parser";
+import { COMMAND_PREFIX } from "../config";
 
 export const data = new SlashCommandBuilder()
-  .setName("list")
+  .setName(COMMAND_PREFIX + "list")
   .setDescription("このサーバーの株価通知設定を一覧表示");
 
 export async function execute(
@@ -22,7 +23,7 @@ export async function execute(
   if (overview.length === 0) {
     await interaction.reply({
       content:
-        "📋 このサーバーにはまだ通知設定がありません。\n`/add-stock` で銘柄を追加してください。",
+        "📋 このサーバーにはまだ通知設定がありません。\n`/kabu-add-stock` で銘柄を追加してください。",
       ephemeral: true,
     });
     return;
@@ -55,7 +56,7 @@ export async function execute(
     // 警告チェック
     if (ch.stocks.length > 0 && ch.schedules.length === 0) {
       warnings.push(
-        `<#${ch.channelId}> — 銘柄${ch.stocks.length}件登録済み、\`/set-schedule\` で設定してください`
+        `<#${ch.channelId}> — 銘柄${ch.stocks.length}件登録済み、\`/kabu-set-schedule\` で設定してください`
       );
     }
     if (ch.stocks.length === 0 && ch.schedules.length > 0) {

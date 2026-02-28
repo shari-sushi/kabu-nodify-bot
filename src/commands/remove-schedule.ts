@@ -4,7 +4,7 @@ import { Scheduler } from "../services/scheduler";
 import { COMMAND_PREFIX } from "../config";
 
 export const data = new SlashCommandBuilder()
-  .setName("remove-schedule")
+  .setName(COMMAND_PREFIX + "remove-schedule")
   .setDescription("指定したスケジュールを削除")
   .addIntegerOption((option) =>
     option.setName("id").setDescription("削除するスケジュールID").setRequired(true)
