@@ -1,4 +1,4 @@
-FROM node:20-slim
+FROM node:22-slim
 
 # canvas (chartjs-node-canvas) のネイティブ依存
 RUN apt-get update && apt-get install -y \
