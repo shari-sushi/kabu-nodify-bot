@@ -1,10 +1,3 @@
-import YahooFinanceModule from "yahoo-finance2";
-
-console.log("yahoo-finance2 export type:", typeof YahooFinanceModule);
-const yahooFinance = typeof YahooFinanceModule === "function"
-  ? new (YahooFinanceModule as any)()
-  : YahooFinanceModule;
-
 export interface StockQuote {
   ticker: string;
   name: string;
@@ -21,7 +14,7 @@ export interface StockHistory {
 }
 
 export function toTokyoTicker(input: string): string {
-  const trimmed = input.trim().toUpperCase();
+  const trimmed = input.replace(/\s+/g, "").toUpperCase();
   return trimmed.endsWith(".T") ? trimmed : `${trimmed}.T`;
 }
 
@@ -29,25 +22,35 @@ export function displayTicker(ticker: string): string {
   return ticker.replace(/\.T$/, "");
 }
 
+async function fetchChart(ticker: string, range: string = "1d", interval: string = "1d"): Promise<any> {
+  const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(ticker)}?interval=${interval}&range=${range}`;
+  const res = await fetch(url, {
+    headers: { "User-Agent": "kabu-notify-bot/1.0" },
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const json = await res.json() as any;
+  const result = json?.chart?.result?.[0];
+  if (!result) throw new Error("No data");
+  return result;
+}
+
 export async function getQuote(ticker: string): Promise<StockQuote | null> {
   try {
-    const result: any = await yahooFinance.quote(ticker);
-    if (!result || !result.regularMarketPrice) return null;
-
-    const price = result.regularMarketPrice;
-    const previousClose = result.regularMarketPreviousClose ?? price;
+    const result = await fetchChart(ticker, "1d", "1d");
+    const meta = result.meta;
+    const price = meta.regularMarketPrice;
+    const previousClose = meta.previousClose ?? meta.chartPreviousClose ?? price;
     const change = price - previousClose;
-    const changePercent =
-      previousClose !== 0 ? (change / previousClose) * 100 : 0;
+    const changePercent = previousClose !== 0 ? (change / previousClose) * 100 : 0;
 
     return {
       ticker,
-      name: result.shortName ?? result.longName ?? ticker,
+      name: meta.shortName ?? meta.longName ?? meta.symbol ?? ticker,
       price,
       previousClose,
       change,
       changePercent,
-      currency: result.currency ?? "JPY",
+      currency: meta.currency ?? "JPY",
     };
   } catch (e) {
     console.error(`Failed to fetch quote for ${ticker}:`, e);
@@ -57,47 +60,36 @@ export async function getQuote(ticker: string): Promise<StockQuote | null> {
 
 export async function getQuotes(tickers: string[]): Promise<Map<string, StockQuote>> {
   const results = new Map<string, StockQuote>();
-  const promises = tickers.map(async (ticker) => {
-    const quote = await getQuote(ticker);
-    if (quote) results.set(ticker, quote);
-  });
-  await Promise.all(promises);
+  await Promise.all(
+    tickers.map(async (ticker) => {
+      const quote = await getQuote(ticker);
+      if (quote) results.set(ticker, quote);
+    })
+  );
   return results;
 }
 
 export async function validateTicker(ticker: string): Promise<{ valid: boolean; name?: string }> {
   try {
-    const result: any = await yahooFinance.quote(ticker);
-    console.log(`validateTicker(${ticker}) result:`, JSON.stringify(result, null, 2));
-    if (result && result.regularMarketPrice) {
-      return { valid: true, name: result.shortName ?? result.longName ?? undefined };
-    }
-    return { valid: false };
+    const result = await fetchChart(ticker, "1d", "1d");
+    const meta = result.meta;
+    return { valid: true, name: meta.shortName ?? meta.longName ?? undefined };
   } catch (e) {
     console.error(`validateTicker(${ticker}) error:`, e);
     return { valid: false };
   }
 }
 
-export async function getHistory(
-  ticker: string,
-  days: number = 30
-): Promise<StockHistory[]> {
+export async function getHistory(ticker: string, days: number = 30): Promise<StockHistory[]> {
   try {
-    const endDate = new Date();
-    const startDate = new Date();
-    startDate.setDate(startDate.getDate() - days);
+    const result = await fetchChart(ticker, "1mo", "1d");
+    const timestamps: number[] = result.timestamp ?? [];
+    const closes: number[] = result.indicators?.quote?.[0]?.close ?? [];
 
-    const result: any = await yahooFinance.historical(ticker, {
-      period1: startDate,
-      period2: endDate,
-      interval: "1d",
-    });
-
-    return (result as any[]).map((row: any) => ({
-      date: row.date,
-      close: row.close,
-    }));
+    return timestamps.map((ts, i) => ({
+      date: new Date(ts * 1000),
+      close: closes[i],
+    })).filter((h) => h.close != null);
   } catch (e) {
     console.error(`Failed to fetch history for ${ticker}:`, e);
     return [];
