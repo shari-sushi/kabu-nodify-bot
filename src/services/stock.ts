@@ -63,11 +63,13 @@ export async function getQuotes(tickers: string[]): Promise<Map<string, StockQuo
 export async function validateTicker(ticker: string): Promise<{ valid: boolean; name?: string }> {
   try {
     const result: any = await yahooFinance.quote(ticker);
+    console.log(`validateTicker(${ticker}) result:`, JSON.stringify(result, null, 2));
     if (result && result.regularMarketPrice) {
       return { valid: true, name: result.shortName ?? result.longName ?? undefined };
     }
     return { valid: false };
-  } catch {
+  } catch (e) {
+    console.error(`validateTicker(${ticker}) error:`, e);
     return { valid: false };
   }
 }
