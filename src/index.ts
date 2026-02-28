@@ -9,7 +9,9 @@ import { Scheduler } from "./services/scheduler";
 import * as addStock from "./commands/add-stock";
 import * as removeStock from "./commands/remove-stock";
 import * as setSchedule from "./commands/set-schedule";
+import * as removeSchedule from "./commands/remove-schedule";
 import * as list from "./commands/list";
+import * as help from "./commands/help";
 
 // DB初期化
 const dbDir = path.dirname(config.dbPath);
@@ -37,7 +39,9 @@ client.once(Events.ClientReady, async (readyClient) => {
     addStock.data.toJSON(),
     removeStock.data.toJSON(),
     setSchedule.data.toJSON(),
+    removeSchedule.data.toJSON(),
     list.data.toJSON(),
+    help.data.toJSON(),
   ];
   await rest.put(Routes.applicationCommands(config.clientId), { body: commands });
   console.log(`${commands.length} slash commands registered`);
@@ -60,8 +64,14 @@ client.on(Events.InteractionCreate, async (interaction) => {
       case "set-schedule":
         await setSchedule.execute(interaction, repo, scheduler);
         break;
+      case "remove-schedule":
+        await removeSchedule.execute(interaction, repo, scheduler);
+        break;
       case "list":
         await list.execute(interaction, repo);
+        break;
+      case "help":
+        await help.execute(interaction);
         break;
       default:
         await interaction.reply({

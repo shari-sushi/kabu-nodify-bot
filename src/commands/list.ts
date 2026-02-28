@@ -40,8 +40,11 @@ export async function execute(
             .join(", ")
         : "なし";
 
+    const schedules = repo.getSchedules(ch.channelId);
     const scheduleList =
-      ch.schedules.length > 0 ? ch.schedules.map((c) => cronToDescription(c)).join(", ") : "未設定";
+      schedules.length > 0
+        ? schedules.map((s) => `[ID:${s.id}] ${cronToDescription(s.cronExpression)}`).join(", ")
+        : "未設定";
 
     embed.addFields({
       name: `<#${ch.channelId}>`,

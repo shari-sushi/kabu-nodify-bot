@@ -97,17 +97,29 @@ export class Repository {
 
   // -- schedules --
 
-  setSchedules(channelId: string, guildId: string, crons: string[]): void {
+  addSchedules(channelId: string, guildId: string, crons: string[]): number[] {
     this.ensureChannel(channelId, guildId);
+    const insertedIds: number[] = [];
+
     this.db.transaction(() => {
-      this.db.prepare(`DELETE FROM schedules WHERE channel_id = ?`).run(channelId);
+      // 既存のcron expressionを取得
+      const existing = this.getSchedules(channelId);
+      const existingCrons = new Set(existing.map((s) => s.cronExpression));
+
       const insert = this.db.prepare(
         `INSERT INTO schedules (channel_id, cron_expression) VALUES (?, ?)`
       );
+
       for (const cron of crons) {
-        insert.run(channelId, cron);
+        // 重複チェック
+        if (!existingCrons.has(cron)) {
+          const result = insert.run(channelId, cron);
+          insertedIds.push(Number(result.lastInsertRowid));
+        }
       }
     })();
+
+    return insertedIds;
   }
 
   getSchedules(channelId: string): Schedule[] {
@@ -117,6 +129,11 @@ export class Repository {
          FROM schedules WHERE channel_id = ?`
       )
       .all(channelId) as Schedule[];
+  }
+
+  deleteSchedule(id: number): boolean {
+    const result = this.db.prepare(`DELETE FROM schedules WHERE id = ?`).run(id);
+    return result.changes > 0;
   }
 
   // -- 全チャンネル情報（スケジューラ用） --

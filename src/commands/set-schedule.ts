@@ -5,7 +5,7 @@ import { Scheduler } from "../services/scheduler";
 
 export const data = new SlashCommandBuilder()
   .setName("set-schedule")
-  .setDescription("このチャンネルの通知スケジュールを設定")
+  .setDescription("このチャンネルに通知スケジュールを追加")
   .addStringOption((option) =>
     option.setName("day").setDescription("曜日（毎日/平日/土日/月火水...）").setRequired(true)
   )
@@ -42,8 +42,8 @@ export async function execute(
     results.push({ cron: parsed.cronExpression, desc: parsed.description });
   }
 
-  // DB更新（既存スケジュールを上書き）
-  repo.setSchedules(
+  // DB追加（既存スケジュールは保持）
+  const insertedIds = repo.addSchedules(
     interaction.channelId,
     interaction.guildId!,
     results.map((r) => r.cron)
@@ -52,6 +52,17 @@ export async function execute(
   // cronタスク再登録
   scheduler.registerAll();
 
-  const scheduleList = results.map((r) => `  ⏰ ${r.desc}`).join("\n");
-  await interaction.reply(`✅ 通知スケジュールを設定しました:\n${scheduleList}`);
+  if (insertedIds.length === 0) {
+    await interaction.reply({
+      content: "⚠️ 指定されたスケジュールは既に登録されています",
+      ephemeral: true,
+    });
+    return;
+  }
+
+  const scheduleList = results
+    .slice(0, insertedIds.length)
+    .map((r, i) => `  [ID:${insertedIds[i]}] ${r.desc}`)
+    .join("\n");
+  await interaction.reply(`✅ 通知スケジュールを追加しました:\n${scheduleList}`);
 }

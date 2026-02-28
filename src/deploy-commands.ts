@@ -3,13 +3,17 @@ import { config } from "./config";
 import * as addStock from "./commands/add-stock";
 import * as removeStock from "./commands/remove-stock";
 import * as setSchedule from "./commands/set-schedule";
+import * as removeSchedule from "./commands/remove-schedule";
 import * as list from "./commands/list";
+import * as help from "./commands/help";
 
 const commands = [
   addStock.data.toJSON(),
   removeStock.data.toJSON(),
   setSchedule.data.toJSON(),
+  removeSchedule.data.toJSON(),
   list.data.toJSON(),
+  help.data.toJSON(),
 ];
 
 async function main() {
