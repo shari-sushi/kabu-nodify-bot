@@ -46,7 +46,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
         await removeStock.execute(interaction, repo);
         break;
       case "set-schedule":
-        await setSchedule.execute(interaction, repo);
+        await setSchedule.execute(interaction, repo, scheduler);
         break;
       case "list":
         await list.execute(interaction, repo);
