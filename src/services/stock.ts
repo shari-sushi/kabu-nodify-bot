@@ -22,13 +22,17 @@ export function displayTicker(ticker: string): string {
   return ticker.replace(/\.T$/, "");
 }
 
-async function fetchChart(ticker: string, range: string = "1d", interval: string = "1d"): Promise<any> {
+async function fetchChart(
+  ticker: string,
+  range: string = "1d",
+  interval: string = "1d"
+): Promise<any> {
   const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(ticker)}?interval=${interval}&range=${range}`;
   const res = await fetch(url, {
     headers: { "User-Agent": "kabu-notify-bot/1.0" },
   });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  const json = await res.json() as any;
+  const json = (await res.json()) as any;
   const result = json?.chart?.result?.[0];
   if (!result) throw new Error("No data");
   return result;
@@ -86,10 +90,12 @@ export async function getHistory(ticker: string, days: number = 30): Promise<Sto
     const timestamps: number[] = result.timestamp ?? [];
     const closes: number[] = result.indicators?.quote?.[0]?.close ?? [];
 
-    return timestamps.map((ts, i) => ({
-      date: new Date(ts * 1000),
-      close: closes[i],
-    })).filter((h) => h.close != null);
+    return timestamps
+      .map((ts, i) => ({
+        date: new Date(ts * 1000),
+        close: closes[i],
+      }))
+      .filter((h) => h.close != null);
   } catch (e) {
     console.error(`Failed to fetch history for ${ticker}:`, e);
     return [];

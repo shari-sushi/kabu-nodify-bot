@@ -1,7 +1,4 @@
-import {
-  ChatInputCommandInteraction,
-  SlashCommandBuilder,
-} from "discord.js";
+import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
 import { Repository } from "../db/repository";
 import { toTokyoTicker, validateTicker, displayTicker } from "../services/stock";
 
@@ -9,10 +6,7 @@ export const data = new SlashCommandBuilder()
   .setName("add-stock")
   .setDescription("このチャンネルに株価通知する銘柄を追加")
   .addStringOption((option) =>
-    option
-      .setName("code")
-      .setDescription("銘柄コード（例: 7203）")
-      .setRequired(true)
+    option.setName("code").setDescription("銘柄コード（例: 7203）").setRequired(true)
   );
 
 export async function execute(

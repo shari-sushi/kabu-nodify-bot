@@ -9,6 +9,8 @@ function requireEnv(key: string): string {
   return value;
 }
 
+export const COMMAND_PREFIX = "kabu-";
+
 export const config = {
   botToken: requireEnv("DISCORD_BOT_TOKEN"),
   clientId: requireEnv("DISCORD_CLIENT_ID"),

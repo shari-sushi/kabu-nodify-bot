@@ -33,27 +33,23 @@ export class Repository {
 
   ensureChannel(channelId: string, guildId: string): void {
     this.db
-      .prepare(
-        `INSERT OR IGNORE INTO channels (channel_id, guild_id) VALUES (?, ?)`
-      )
+      .prepare(`INSERT OR IGNORE INTO channels (channel_id, guild_id) VALUES (?, ?)`)
       .run(channelId, guildId);
   }
 
   // -- stocks --
 
   findStockByTicker(ticker: string): Stock | undefined {
-    return this.db
-      .prepare(`SELECT id, ticker, name FROM stocks WHERE ticker = ?`)
-      .get(ticker) as Stock | undefined;
+    return this.db.prepare(`SELECT id, ticker, name FROM stocks WHERE ticker = ?`).get(ticker) as
+      | Stock
+      | undefined;
   }
 
   upsertStock(ticker: string, name: string | null): number {
     const existing = this.findStockByTicker(ticker);
     if (existing) {
       if (name && !existing.name) {
-        this.db
-          .prepare(`UPDATE stocks SET name = ? WHERE id = ?`)
-          .run(name, existing.id);
+        this.db.prepare(`UPDATE stocks SET name = ? WHERE id = ?`).run(name, existing.id);
       }
       return existing.id;
     }
@@ -65,18 +61,11 @@ export class Repository {
 
   // -- channel_stocks --
 
-  addChannelStock(
-    channelId: string,
-    guildId: string,
-    stockId: number,
-    addedBy: string
-  ): boolean {
+  addChannelStock(channelId: string, guildId: string, stockId: number, addedBy: string): boolean {
     this.ensureChannel(channelId, guildId);
     try {
       this.db
-        .prepare(
-          `INSERT INTO channel_stocks (channel_id, stock_id, added_by) VALUES (?, ?, ?)`
-        )
+        .prepare(`INSERT INTO channel_stocks (channel_id, stock_id, added_by) VALUES (?, ?, ?)`)
         .run(channelId, stockId, addedBy);
       return true;
     } catch (e: any) {
@@ -89,9 +78,7 @@ export class Repository {
     const stock = this.findStockByTicker(ticker);
     if (!stock) return false;
     const result = this.db
-      .prepare(
-        `DELETE FROM channel_stocks WHERE channel_id = ? AND stock_id = ?`
-      )
+      .prepare(`DELETE FROM channel_stocks WHERE channel_id = ? AND stock_id = ?`)
       .run(channelId, stock.id);
     return result.changes > 0;
   }
@@ -113,9 +100,7 @@ export class Repository {
   setSchedules(channelId: string, guildId: string, crons: string[]): void {
     this.ensureChannel(channelId, guildId);
     this.db.transaction(() => {
-      this.db
-        .prepare(`DELETE FROM schedules WHERE channel_id = ?`)
-        .run(channelId);
+      this.db.prepare(`DELETE FROM schedules WHERE channel_id = ?`).run(channelId);
       const insert = this.db.prepare(
         `INSERT INTO schedules (channel_id, cron_expression) VALUES (?, ?)`
       );
@@ -177,9 +162,7 @@ export class Repository {
         .all(ch.channel_id) as { ticker: string; name: string | null }[];
 
       const schedules = this.db
-        .prepare(
-          `SELECT cron_expression FROM schedules WHERE channel_id = ?`
-        )
+        .prepare(`SELECT cron_expression FROM schedules WHERE channel_id = ?`)
         .all(ch.channel_id) as { cron_expression: string }[];
 
       return {

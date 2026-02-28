@@ -28,9 +28,7 @@ function formatDate(date: Date): string {
   return `${m}/${d}`;
 }
 
-export async function generateChart(
-  data: Map<string, StockHistory[]>
-): Promise<Buffer> {
+export async function generateChart(data: Map<string, StockHistory[]>): Promise<Buffer> {
   // 全銘柄の日付をユニオンしてラベル作成
   const allDates = new Set<string>();
   for (const history of data.values()) {
@@ -42,31 +40,29 @@ export async function generateChart(
 
   const useNormalized = data.size > 1;
 
-  const datasets = Array.from(data.entries()).map(
-    ([ticker, history], index) => {
-      const color = COLORS[index % COLORS.length];
-      const dateMap = new Map(history.map((h) => [formatDate(h.date), h.close]));
-      const basePrice = history.length > 0 ? history[0].close : 1;
+  const datasets = Array.from(data.entries()).map(([ticker, history], index) => {
+    const color = COLORS[index % COLORS.length];
+    const dateMap = new Map(history.map((h) => [formatDate(h.date), h.close]));
+    const basePrice = history.length > 0 ? history[0].close : 1;
 
-      const values = labels.map((label) => {
-        const close = dateMap.get(label);
-        if (close == null) return null;
-        return useNormalized ? ((close - basePrice) / basePrice) * 100 : close;
-      });
+    const values = labels.map((label) => {
+      const close = dateMap.get(label);
+      if (close == null) return null;
+      return useNormalized ? ((close - basePrice) / basePrice) * 100 : close;
+    });
 
-      return {
-        label: displayTicker(ticker),
-        data: values,
-        borderColor: color,
-        backgroundColor: color + "33",
-        borderWidth: 2,
-        pointRadius: 0,
-        fill: false,
-        tension: 0.1,
-        spanGaps: true,
-      };
-    }
-  );
+    return {
+      label: displayTicker(ticker),
+      data: values,
+      borderColor: color,
+      backgroundColor: color + "33",
+      borderWidth: 2,
+      pointRadius: 0,
+      fill: false,
+      tension: 0.1,
+      spanGaps: true,
+    };
+  });
 
   const config: ChartConfiguration = {
     type: "line",

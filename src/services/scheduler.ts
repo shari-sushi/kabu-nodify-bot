@@ -1,10 +1,5 @@
 import cron, { ScheduledTask } from "node-cron";
-import {
-  Client,
-  TextChannel,
-  AttachmentBuilder,
-  EmbedBuilder,
-} from "discord.js";
+import { Client, TextChannel, AttachmentBuilder, EmbedBuilder } from "discord.js";
 import { Repository } from "../db/repository";
 import { getQuotes, getHistory, displayTicker, StockQuote } from "./stock";
 import { generateChart } from "./chart";
@@ -39,9 +34,7 @@ export class Scheduler {
       );
 
       this.tasks.set(taskKey, task);
-      console.log(
-        `Scheduled: ${channelId} → ${cronToDescription(cronExpression)}`
-      );
+      console.log(`Scheduled: ${channelId} → ${cronToDescription(cronExpression)}`);
     }
 
     console.log(`${this.tasks.size} cron tasks registered`);
@@ -84,9 +77,7 @@ export class Scheduler {
       minute: "2-digit",
     });
 
-    const embed = new EmbedBuilder()
-      .setTitle(`📈 株価通知 - ${now}`)
-      .setColor(0x89b4fa);
+    const embed = new EmbedBuilder().setTitle(`📈 株価通知 - ${now}`).setColor(0x89b4fa);
 
     for (const ticker of tickers) {
       const quote = quotes.get(ticker);

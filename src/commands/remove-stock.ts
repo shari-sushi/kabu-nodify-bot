@@ -1,7 +1,4 @@
-import {
-  ChatInputCommandInteraction,
-  SlashCommandBuilder,
-} from "discord.js";
+import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
 import { Repository } from "../db/repository";
 import { toTokyoTicker, displayTicker } from "../services/stock";
 
@@ -9,10 +6,7 @@ export const data = new SlashCommandBuilder()
   .setName("remove-stock")
   .setDescription("このチャンネルから銘柄を削除")
   .addStringOption((option) =>
-    option
-      .setName("code")
-      .setDescription("銘柄コード（例: 7203）")
-      .setRequired(true)
+    option.setName("code").setDescription("銘柄コード（例: 7203）").setRequired(true)
   );
 
 export async function execute(
@@ -32,7 +26,5 @@ export async function execute(
     return;
   }
 
-  await interaction.reply(
-    `🗑️ **${displayTicker(ticker)}** を削除しました。`
-  );
+  await interaction.reply(`🗑️ **${displayTicker(ticker)}** を削除しました。`);
 }
