@@ -1,6 +1,9 @@
 import YahooFinanceModule from "yahoo-finance2";
 
-const yahooFinance = new YahooFinanceModule();
+console.log("yahoo-finance2 export type:", typeof YahooFinanceModule);
+const yahooFinance = typeof YahooFinanceModule === "function"
+  ? new (YahooFinanceModule as any)()
+  : YahooFinanceModule;
 
 export interface StockQuote {
   ticker: string;
