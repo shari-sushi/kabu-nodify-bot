@@ -1,9 +1,16 @@
 import { ChatInputCommandInteraction, SlashCommandBuilder, EmbedBuilder } from "discord.js";
 import { COMMAND_PREFIX } from "../config";
+import { allCommands } from "./index";
 
 export const data = new SlashCommandBuilder()
   .setName(COMMAND_PREFIX + "help")
   .setDescription("コマンドの使い方を表示");
+
+export function getHelpCommandFields() {
+  return allCommands.map((cmd) => ({
+    commandName: cmd.name,
+  }));
+}
 
 export async function execute(
   interaction: ChatInputCommandInteraction,

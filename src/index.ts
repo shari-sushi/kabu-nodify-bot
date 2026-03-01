@@ -6,6 +6,7 @@ import { config, COMMAND_PREFIX } from "./config";
 import { migrate } from "./db/schema";
 import { Repository } from "./db/repository";
 import { Scheduler } from "./services/scheduler";
+import { allCommands } from "./commands";
 import * as addStock from "./commands/add-stock";
 import * as removeStock from "./commands/remove-stock";
 import * as setSchedule from "./commands/set-schedule";
@@ -39,15 +40,7 @@ client.once(Events.ClientReady, async (readyClient) => {
   // スラッシュコマンド登録
   const { REST, Routes } = await import("discord.js");
   const rest = new REST({ version: "10" }).setToken(config.botToken);
-  const commands = [
-    addStock.data.toJSON(),
-    removeStock.data.toJSON(),
-    setSchedule.data.toJSON(),
-    removeSchedule.data.toJSON(),
-    list.data.toJSON(),
-    help.data.toJSON(),
-    quote.data.toJSON(),
-  ];
+  const commands = allCommands.map((cmd) => cmd.toJSON());
   const registeredCommands = (await rest.put(Routes.applicationCommands(config.clientId), {
     body: commands,
   })) as { id: string; name: string }[];
