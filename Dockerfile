@@ -21,4 +21,11 @@ COPY src/ ./src/
 
 RUN npm run build
 
-CMD ["node", "dist/index.js"]
+# データ永続化用のディレクトリを作成
+RUN mkdir -p /app/data
+
+# ボリュームマウントポイントを定義
+VOLUME /app/data
+
+# 起動時にコマンド登録してから本体を起動
+CMD ["sh", "-c", "npm run deploy-commands && node dist/index.js"]
