@@ -6,7 +6,6 @@ import { config, COMMAND_PREFIX } from "./config";
 import { migrate } from "./db/schema";
 import { Repository } from "./db/repository";
 import { Scheduler } from "./services/scheduler";
-import { allCommands } from "./commands";
 import * as addStock from "./commands/add-stock";
 import * as removeStock from "./commands/remove-stock";
 import * as setSchedule from "./commands/set-schedule";
@@ -14,9 +13,6 @@ import * as removeSchedule from "./commands/remove-schedule";
 import * as list from "./commands/list";
 import * as help from "./commands/help";
 import * as quote from "./commands/quote";
-
-// コマンドIDのキャッシュ
-export const commandIds = new Map<string, string>();
 
 // DB初期化
 const dbDir = path.dirname(config.dbPath);
@@ -36,21 +32,6 @@ let scheduler: Scheduler;
 
 client.once(Events.ClientReady, async (readyClient) => {
   console.log(`Logged in as ${readyClient.user.tag}`);
-
-  // スラッシュコマンド登録
-  const { REST, Routes } = await import("discord.js");
-  const rest = new REST({ version: "10" }).setToken(config.botToken);
-  const commands = allCommands.map((cmd) => cmd.toJSON());
-  const registeredCommands = (await rest.put(Routes.applicationCommands(config.clientId), {
-    body: commands,
-  })) as { id: string; name: string }[];
-
-  // コマンドIDをキャッシュ
-  for (const cmd of registeredCommands) {
-    commandIds.set(cmd.name, cmd.id);
-  }
-
-  console.log(`${commands.length} slash commands registered`);
 
   scheduler = new Scheduler(client, repo);
   scheduler.registerAll();
@@ -77,7 +58,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
         await list.execute(interaction, repo);
         break;
       case COMMAND_PREFIX + "help":
-        await help.execute(interaction, commandIds);
+        await help.execute(interaction);
         break;
       case COMMAND_PREFIX + "quote":
         await quote.execute(interaction, repo);

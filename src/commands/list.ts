@@ -3,6 +3,7 @@ import { Repository } from "../db/repository";
 import { displayTicker } from "../services/stock";
 import { cronToDescription } from "../services/schedule-parser";
 import { COMMAND_PREFIX } from "../config";
+import { getCommandMention } from "../utils/command-mention";
 
 export const data = new SlashCommandBuilder()
   .setName(COMMAND_PREFIX + "list")
@@ -20,10 +21,13 @@ export async function execute(
 
   const overview = repo.getGuildOverview(guildId);
 
+  // コマンドメンションを取得
+  const addStockCmd = await getCommandMention(interaction.client, "add-stock");
+  const setScheduleCmd = await getCommandMention(interaction.client, "set-schedule");
+
   if (overview.length === 0) {
     await interaction.reply({
-      content:
-        "📋 このサーバーにはまだ通知設定がありません。\n`/kabu-add-stock` で銘柄を追加してください。",
+      content: `📋 このサーバーにはまだ通知設定がありません。\n${addStockCmd} で銘柄を追加してください。`,
       ephemeral: true,
     });
     return;
@@ -56,7 +60,7 @@ export async function execute(
     // 警告チェック
     if (ch.stocks.length > 0 && ch.schedules.length === 0) {
       warnings.push(
-        `<#${ch.channelId}> — 銘柄${ch.stocks.length}件登録済み、\`/kabu-set-schedule\` で設定してください`
+        `<#${ch.channelId}> — 銘柄${ch.stocks.length}件登録済み、${setScheduleCmd} で設定してください`
       );
     }
     if (ch.stocks.length === 0 && ch.schedules.length > 0) {

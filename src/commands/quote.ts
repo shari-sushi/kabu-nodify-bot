@@ -3,6 +3,7 @@ import { Repository } from "../db/repository";
 import { getQuotes } from "../services/stock";
 import { COMMAND_PREFIX } from "../config";
 import { createStockNotification } from "../services/stock-ui";
+import { getCommandMention } from "../utils/command-mention";
 
 export const data = new SlashCommandBuilder()
   .setName(COMMAND_PREFIX + "quote")
@@ -17,9 +18,9 @@ export async function execute(
   const stocks = repo.getChannelStocks(interaction.channelId);
 
   if (stocks.length === 0) {
+    const addStockCmd = await getCommandMention(interaction.client, "add-stock");
     await interaction.editReply({
-      content:
-        "📋 このチャンネルには銘柄が登録されていません。\n`/kabu-add-stock` で銘柄を追加してください。",
+      content: `📋 このチャンネルには銘柄が登録されていません。\n${addStockCmd} で銘柄を追加してください。`,
     });
     return;
   }

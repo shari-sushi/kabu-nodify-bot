@@ -1,6 +1,7 @@
 import { ChatInputCommandInteraction, SlashCommandBuilder, EmbedBuilder } from "discord.js";
 import { COMMAND_PREFIX } from "../config";
 import { allCommands } from "./index";
+import { getCommandMention } from "../utils/command-mention";
 
 export const data = new SlashCommandBuilder()
   .setName(COMMAND_PREFIX + "help")
@@ -12,52 +13,55 @@ export function getHelpCommandFields() {
   }));
 }
 
-export async function execute(
-  interaction: ChatInputCommandInteraction,
-  commandIds: Map<string, string>
-): Promise<void> {
-  const formatCommand = (name: string) => {
-    const fullName = COMMAND_PREFIX + name;
-    const id = commandIds.get(fullName);
-    return id ? `</${fullName}:${id}>` : `/${fullName}`;
-  };
+export async function execute(interaction: ChatInputCommandInteraction): Promise<void> {
+  // 全てのコマンドメンションを取得
+  const [addStockCmd, removeStockCmd, setScheduleCmd, removeScheduleCmd, listCmd, quoteCmd, helpCmd] =
+    await Promise.all([
+      getCommandMention(interaction.client, "add-stock"),
+      getCommandMention(interaction.client, "remove-stock"),
+      getCommandMention(interaction.client, "set-schedule"),
+      getCommandMention(interaction.client, "remove-schedule"),
+      getCommandMention(interaction.client, "list"),
+      getCommandMention(interaction.client, "quote"),
+      getCommandMention(interaction.client, "help"),
+    ]);
 
   const embed = new EmbedBuilder()
     .setTitle("📖 コマンド一覧")
     .setColor(0x89b4fa)
     .addFields(
       {
-        name: formatCommand("add-stock"),
+        name: addStockCmd,
         value: "このチャンネルで通知する銘柄を追加",
         inline: false,
       },
       {
-        name: formatCommand("remove-stock"),
+        name: removeStockCmd,
         value: "このチャンネルから銘柄を削除",
         inline: false,
       },
       {
-        name: formatCommand("set-schedule"),
+        name: setScheduleCmd,
         value: "このチャンネルの通知スケジュールを設定（曜日・時刻を指定）",
         inline: false,
       },
       {
-        name: formatCommand("remove-schedule"),
-        value: `指定したIDのスケジュールを削除（IDは ${formatCommand("list")} で確認）`,
+        name: removeScheduleCmd,
+        value: `指定したIDのスケジュールを削除（IDは ${listCmd} で確認）`,
         inline: false,
       },
       {
-        name: formatCommand("list"),
+        name: listCmd,
         value: "このサーバーの全設定を表示（銘柄・スケジュールID含む）",
         inline: false,
       },
       {
-        name: formatCommand("quote"),
+        name: quoteCmd,
         value: "このチャンネルで登録した銘柄の現株価を表示",
         inline: false,
       },
       {
-        name: formatCommand("help"),
+        name: helpCmd,
         value: "このヘルプを表示",
         inline: false,
       }
