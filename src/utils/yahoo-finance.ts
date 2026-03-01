@@ -8,7 +8,7 @@ import { YahooFinanceChartResult } from "../libs/yahoo-finance/types";
 
 export type { YahooFinanceChartResult };
 
-const DEFAULT_TIMEOUT_MS = 10000; // 10秒
+const DEFAULT_TIMEOUT_MS = 30000; // 30秒（Railway環境での接続遅延を考慮）
 const MAX_RETRIES = 3;
 const INITIAL_RETRY_DELAY_MS = 1000; // 1秒
 
