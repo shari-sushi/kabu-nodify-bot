@@ -1,3 +1,5 @@
+import { fetchYahooFinanceChart } from "../libs/yahoo-finance";
+
 export interface StockQuote {
   ticker: string;
   name: string;
@@ -22,25 +24,9 @@ export function displayTicker(ticker: string): string {
   return ticker.replace(/\.T$/, "");
 }
 
-async function fetchChart(
-  ticker: string,
-  range: string = "1d",
-  interval: string = "1d"
-): Promise<any> {
-  const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(ticker)}?interval=${interval}&range=${range}`;
-  const res = await fetch(url, {
-    headers: { "User-Agent": "kabu-notify-bot/1.0" },
-  });
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  const json = (await res.json()) as any;
-  const result = json?.chart?.result?.[0];
-  if (!result) throw new Error("No data");
-  return result;
-}
-
 export async function getQuote(ticker: string): Promise<StockQuote | null> {
   try {
-    const result = await fetchChart(ticker, "1d", "1d");
+    const result = await fetchYahooFinanceChart(ticker, "1d", "1d");
     const meta = result.meta;
     const price = meta.regularMarketPrice;
     const previousClose = meta.previousClose ?? meta.chartPreviousClose ?? price;
@@ -75,7 +61,7 @@ export async function getQuotes(tickers: string[]): Promise<Map<string, StockQuo
 
 export async function validateTicker(ticker: string): Promise<{ valid: boolean; name?: string }> {
   try {
-    const result = await fetchChart(ticker, "1d", "1d");
+    const result = await fetchYahooFinanceChart(ticker, "1d", "1d");
     const meta = result.meta;
     return { valid: true, name: meta.shortName ?? meta.longName ?? undefined };
   } catch (e) {
@@ -86,7 +72,7 @@ export async function validateTicker(ticker: string): Promise<{ valid: boolean; 
 
 export async function getHistory(ticker: string, days: number = 30): Promise<StockHistory[]> {
   try {
-    const result = await fetchChart(ticker, "1mo", "1d");
+    const result = await fetchYahooFinanceChart(ticker, "1mo", "1d");
     const timestamps: number[] = result.timestamp ?? [];
     const closes: number[] = result.indicators?.quote?.[0]?.close ?? [];
 

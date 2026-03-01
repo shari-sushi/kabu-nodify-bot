@@ -2,10 +2,18 @@
 
 ## 前置き
 
-全てClaude.aiが作りました
-意図的にエディターやターミナルを使わずにClaude, GitHub, Railwayの各ブラウザだけで完結させたので、コーディングの仕方とかはai流です。
+この開発は、意図的にAI任せの領域を増やし、どこまで簡単に、手間をかけずに開発できるかの実験でもあります。
+
+[初期実装](<https://github.com/shari-sushi/kabu-notify-discord-bot/tree/6ad04ce88df07ff6e4c69a7a2417045b294f8b81>)である  
+<img src="https://pbs.twimg.com/media/HCOC4pibgAA6OsV?format=jpg&name=large" alt="初期実装のスクリーンショット" width="300" />  
+までは全てClaude.aiが作りました。
+初期構想を伝えて出力されたプロジェクト全体の設計に修正指示を出したのみで、エディターやターミナルを使わずにClaude, GitHub, Railwayの各ブラウザだけで完結させました。
+そこまではGUIの見方、操作方法の指南書があれば非エンジニアでもなんとか作れたのではないかと思います。
 <https://claude.ai/share/6eff4a8a-6500-40e1-b1e9-3e931b7f76df>
-※1度ミスった時に`git reset --hard`だけVScodeでやりました。
+(1度ミスった時に`git reset --hard`だけVScodeでやりましたが。)
+
+その後は__あまりコードを読まず__にClaude code上でバイブコーディングモドキで開発しています。
+(他の個人プロジェクトの開発の隙間で片手間にやってます)
 
 ---
 
