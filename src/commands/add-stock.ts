@@ -22,9 +22,18 @@ export async function execute(
   // 銘柄の存在確認
   const validation = await validateTicker(ticker);
   if (!validation.valid) {
-    await interaction.editReply(
-      `❌ 銘柄コード \`${displayTicker(ticker)}\` が見つかりません。東証の銘柄コードを確認してください。`
-    );
+    let errorMessage: string;
+    switch (validation.error) {
+      case "network":
+        errorMessage = `⚠️ ${validation.message}\n株価データの取得に失敗しました。時間を置いてから再度お試しください。`;
+        break;
+      case "not_found":
+        errorMessage = `❌ 銘柄コード \`${displayTicker(ticker)}\` が見つかりません。東証の銘柄コードを確認してください。`;
+        break;
+      default:
+        errorMessage = `❌ ${validation.message ?? "予期しないエラーが発生しました"}`;
+    }
+    await interaction.editReply(errorMessage);
     return;
   }
 

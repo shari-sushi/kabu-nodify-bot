@@ -59,14 +59,57 @@ export async function getQuotes(tickers: string[]): Promise<Map<string, StockQuo
   return results;
 }
 
-export async function validateTicker(ticker: string): Promise<{ valid: boolean; name?: string }> {
+export interface ValidationResult {
+  valid: boolean;
+  name?: string;
+  error?: "network" | "not_found" | "unknown";
+  message?: string;
+}
+
+export async function validateTicker(ticker: string): Promise<ValidationResult> {
   try {
     const result = await fetchYahooFinanceChart(ticker, "1d", "1d");
     const meta = result.meta;
     return { valid: true, name: meta.shortName ?? meta.longName ?? undefined };
-  } catch (e) {
+  } catch (e: any) {
     console.error(`validateTicker(${ticker}) error:`, e);
-    return { valid: false };
+
+    // エラーの種類を判定
+    if (e.status === 404 || e.isDataError) {
+      return {
+        valid: false,
+        error: "not_found",
+        message: "銘柄が見つかりません",
+      };
+    }
+
+    if (e.isHttpError) {
+      return {
+        valid: false,
+        error: "unknown",
+        message: `APIエラー: HTTP ${e.status}`,
+      };
+    }
+
+    // ネットワークエラー（タイムアウト、接続失敗など）
+    if (
+      e.code === "ETIMEDOUT" ||
+      e.code === "ECONNREFUSED" ||
+      e.name === "AbortError" ||
+      e.message?.includes("fetch failed")
+    ) {
+      return {
+        valid: false,
+        error: "network",
+        message: "ネットワークエラー: Yahoo Finance APIに接続できません",
+      };
+    }
+
+    return {
+      valid: false,
+      error: "unknown",
+      message: "予期しないエラーが発生しました",
+    };
   }
 }
 
