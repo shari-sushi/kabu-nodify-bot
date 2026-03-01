@@ -12,6 +12,7 @@ import * as setSchedule from "./commands/set-schedule";
 import * as removeSchedule from "./commands/remove-schedule";
 import * as list from "./commands/list";
 import * as help from "./commands/help";
+import * as quote from "./commands/quote";
 
 // コマンドIDのキャッシュ
 export const commandIds = new Map<string, string>();
@@ -45,6 +46,7 @@ client.once(Events.ClientReady, async (readyClient) => {
     removeSchedule.data.toJSON(),
     list.data.toJSON(),
     help.data.toJSON(),
+    quote.data.toJSON(),
   ];
   const registeredCommands = (await rest.put(Routes.applicationCommands(config.clientId), {
     body: commands,
@@ -83,6 +85,9 @@ client.on(Events.InteractionCreate, async (interaction) => {
         break;
       case COMMAND_PREFIX + "help":
         await help.execute(interaction, commandIds);
+        break;
+      case COMMAND_PREFIX + "quote":
+        await quote.execute(interaction, repo);
         break;
       default:
         await interaction.reply({
