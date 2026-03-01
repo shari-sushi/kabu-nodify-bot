@@ -1,9 +1,9 @@
 import cron, { ScheduledTask } from "node-cron";
-import { Client, TextChannel, AttachmentBuilder, EmbedBuilder } from "discord.js";
+import { Client, TextChannel } from "discord.js";
 import { Repository } from "../db/repository";
-import { getQuotes, getHistory, displayTicker, StockQuote } from "./stock";
-import { generateChart } from "./chart";
+import { getQuotes } from "./stock";
 import { cronToDescription } from "./schedule-parser";
+import { createStockNotification } from "./stock-ui";
 
 export class Scheduler {
   private tasks: Map<string, ScheduledTask> = new Map();
@@ -67,64 +67,8 @@ export class Scheduler {
       return;
     }
 
-    // Embed作成
-    const now = new Date().toLocaleString("ja-JP", {
-      timeZone: "Asia/Tokyo",
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-
-    const embed = new EmbedBuilder().setTitle(`📈 株価通知 - ${now}`).setColor(0x89b4fa);
-
-    for (const ticker of tickers) {
-      const quote = quotes.get(ticker);
-      if (!quote) {
-        embed.addFields({
-          name: displayTicker(ticker),
-          value: "取得失敗",
-          inline: true,
-        });
-        continue;
-      }
-
-      const arrow = quote.change >= 0 ? "🔺" : "🔻";
-      const sign = quote.change >= 0 ? "+" : "";
-      const price = `¥${quote.price.toLocaleString()}`;
-      const change = `${sign}${quote.change.toFixed(0)} (${sign}${quote.changePercent.toFixed(2)}%)`;
-
-      embed.addFields({
-        name: `${quote.name} (${displayTicker(ticker)})`,
-        value: `${price}　${arrow} ${change}`,
-        inline: false,
-      });
-    }
-
-    // チャート画像生成
-    try {
-      const historyMap = new Map<string, Awaited<ReturnType<typeof getHistory>>>();
-      await Promise.all(
-        tickers.map(async (ticker) => {
-          const history = await getHistory(ticker, 30);
-          if (history.length > 0) historyMap.set(ticker, history);
-        })
-      );
-
-      if (historyMap.size > 0) {
-        const chartBuffer = await generateChart(historyMap);
-        const attachment = new AttachmentBuilder(chartBuffer, {
-          name: "chart.png",
-        });
-        embed.setImage("attachment://chart.png");
-        await channel.send({ embeds: [embed], files: [attachment] });
-      } else {
-        await channel.send({ embeds: [embed] });
-      }
-    } catch (e) {
-      console.error("Chart generation failed:", e);
-      await channel.send({ embeds: [embed] });
-    }
+    // 株価通知メッセージを作成（チャート生成を含む）
+    const message = await createStockNotification(quotes, tickers);
+    await channel.send(message);
   }
 }
