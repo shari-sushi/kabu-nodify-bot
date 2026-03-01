@@ -1,6 +1,7 @@
 import { ChartJSNodeCanvas } from "chartjs-node-canvas";
 import { ChartConfiguration } from "chart.js";
 import { StockHistory, displayTicker } from "./stock";
+import { getColorForIndex } from "../utils/stock-colors";
 
 const WIDTH = 800;
 const HEIGHT = 400;
@@ -10,17 +11,6 @@ const chartCanvas = new ChartJSNodeCanvas({
   height: HEIGHT,
   backgroundColour: "#1e1e2e",
 });
-
-const COLORS = [
-  "#89b4fa",
-  "#a6e3a1",
-  "#f38ba8",
-  "#fab387",
-  "#cba6f7",
-  "#94e2d5",
-  "#f9e2af",
-  "#74c7ec",
-];
 
 function formatDate(date: Date): string {
   const m = (date.getMonth() + 1).toString().padStart(2, "0");
@@ -41,7 +31,7 @@ export async function generateChart(data: Map<string, StockHistory[]>): Promise<
   const useNormalized = data.size > 1;
 
   const datasets = Array.from(data.entries()).map(([ticker, history], index) => {
-    const color = COLORS[index % COLORS.length];
+    const color = getColorForIndex(index);
     const dateMap = new Map(history.map((h) => [formatDate(h.date), h.close]));
     const basePrice = history.length > 0 ? history[0].close : 1;
 

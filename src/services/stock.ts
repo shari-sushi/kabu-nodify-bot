@@ -1,4 +1,4 @@
-import { fetchYahooFinanceChart } from "../libs/yahoo-finance";
+import { fetchYahooFinanceChart } from "../utils/yahoo-finance";
 
 export interface StockQuote {
   ticker: string;

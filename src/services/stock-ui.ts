@@ -1,9 +1,10 @@
 import { EmbedBuilder, AttachmentBuilder } from "discord.js";
 import { StockQuote, displayTicker, getHistory } from "./stock";
 import { generateChart } from "./chart";
+import { getEmojiForIndex } from "../utils/stock-colors";
 
 /**
- * 株価情報からEmbedを作成する（再利用可能な関数）
+ * 株価情報からEmbedを作成する
  */
 export function createStockQuoteEmbed(
   quotes: Map<string, StockQuote>,
@@ -19,11 +20,9 @@ export function createStockQuoteEmbed(
     minute: "2-digit",
   });
 
-  const embed = new EmbedBuilder()
-    .setTitle(title ?? `📈 株価通知 - ${now}`)
-    .setColor(0x89b4fa);
+  const embed = new EmbedBuilder().setTitle(title ?? `📈 株価通知 - ${now}`).setColor(0x89b4fa);
 
-  for (const ticker of tickers) {
+  tickers.forEach((ticker, index) => {
     const quote = quotes.get(ticker);
     if (!quote) {
       embed.addFields({
@@ -31,20 +30,21 @@ export function createStockQuoteEmbed(
         value: "取得失敗",
         inline: true,
       });
-      continue;
+      return;
     }
 
     const arrow = quote.change >= 0 ? "🔺" : "🔻";
     const sign = quote.change >= 0 ? "+" : "";
     const price = `¥${quote.price.toLocaleString()}`;
     const change = `${sign}${quote.change.toFixed(0)} (${sign}${quote.changePercent.toFixed(2)}%)`;
+    const colorEmoji = getEmojiForIndex(index);
 
     embed.addFields({
-      name: `${quote.name} (${displayTicker(ticker)})`,
-      value: `${price}　${arrow} ${change}`,
+      name: `${colorEmoji} ${quote.name} (${displayTicker(ticker)})`,
+      value: `  ${price}${arrow} ${change}`,
       inline: false,
     });
-  }
+  });
 
   return embed;
 }
@@ -64,7 +64,7 @@ export function createStockMessageWithChart(
 }
 
 /**
- * 株価通知メッセージをチャート付きで作成する（再利用可能な高レベル関数）
+ * 株価通知メッセージをチャート付きで作成する
  */
 export async function createStockNotification(
   quotes: Map<string, StockQuote>,
